@@ -39,8 +39,9 @@ public class Md5Hasher {
 		do {
 			num = blobStream.read(buffer);
 		} while (num > 0);
-		
+		blobStream.close();
 		bStream.close();
+		fStream.close();
 		
 		return digest.digest();
 	}

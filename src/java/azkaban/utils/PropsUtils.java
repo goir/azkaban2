@@ -221,7 +221,7 @@ public class PropsUtils {
 
 		DateTime loadTime = new DateTime();
 
-		parentProps.put(CommonJobProperties.FLOW_START_TIMESTAMP, loadTime.toString());
+		parentProps.put(CommonJobProperties.FLOW_START_TIMESTAMP, loadTime.getMillis() / 1000);
 		parentProps.put(CommonJobProperties.FLOW_START_YEAR, loadTime.toString("yyyy"));
 		parentProps.put(CommonJobProperties.FLOW_START_MONTH, loadTime.toString("MM"));
 		parentProps.put(CommonJobProperties.FLOW_START_DAY, loadTime.toString("dd"));

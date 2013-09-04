@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -271,6 +272,58 @@ public class ProjectManager {
 		else {
 			projectLoader.postEvent(project, EventType.USER_PERMISSION, modifier.getUserId(), "Permission for user " + name + " removed.");
 		}
+	}
+	
+	public boolean isValidProject(Project project, File archive, String fileType, User uploader) throws ProjectManagerException {
+		logger.info("Uploading files to " + project.getName() + " for syntax check");
+		
+		// Unzip.
+		File file = null;
+		try {
+			if (fileType == null) {
+				throw new ProjectManagerException("Unknown file type for " + archive.getName());
+			}
+			else if ("zip".equals(fileType)) {
+				file = unzipFile(archive);
+			}
+			else {
+				throw new ProjectManagerException("Unsupported archive type for file " + archive.getName());
+			}
+		} catch(IOException e) {
+			throw new ProjectManagerException("Error unzipping file.", e);
+		}
+
+		logger.info("Validating Flow for upload " + archive.getName());
+		DirectoryFlowLoader loader = new DirectoryFlowLoader(logger);
+		loader.loadProjectFlow(file);
+		if(!loader.getErrors().isEmpty()) {
+			logger.error("Error found in upload to " + project.getName() + ". Cleaning up.");
+			
+			try {
+				FileUtils.deleteDirectory(file);
+			} catch (IOException e) {
+				file.deleteOnExit();
+				e.printStackTrace();
+			}
+			
+			StringBuffer errorMessage = new StringBuffer();
+			errorMessage.append("Error found in upload. Cannot upload.\n");
+			for (String error: loader.getErrors()) {
+				errorMessage.append(error);
+				errorMessage.append('\n');
+			}
+
+			throw new ProjectManagerException(errorMessage.toString());
+		}
+		
+		try {
+            FileUtils.deleteDirectory(file);
+        } catch (IOException e) {
+            file.deleteOnExit();
+            e.printStackTrace();
+        }
+		
+		return true;
 	}
 	
 	public void uploadProject(Project project, File archive, String fileType, User uploader) throws ProjectManagerException {

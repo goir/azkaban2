@@ -1268,7 +1268,15 @@ public class ProjectManagerServlet extends LoginAbstractAzkabanServlet {
 				IOUtils.copy(item.getInputStream(), out);
 				out.close();
 				
-				projectManager.uploadProject(project, archiveFile, type, user);
+				String validateUpload = (String) multipart.get("validate");
+				if (validateUpload != null && !validateUpload.isEmpty()) {
+					if (projectManager.isValidProject(project, archiveFile, type, user)) {
+						ret.put("valid", "true");
+					}
+				}
+				else {
+					projectManager.uploadProject(project, archiveFile, type, user);
+				}
 			} catch (Exception e) {
 				logger.info("Installation Failed.", e);
 				String error = e.getMessage();

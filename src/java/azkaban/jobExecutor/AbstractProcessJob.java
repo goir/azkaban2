@@ -92,14 +92,18 @@ public abstract class AbstractProcessJob extends AbstractJob {
 	* @return {tmpPropFile, outputPropFile}
 	*/
 	public File[] initPropsFiles() {
+		File tmpDir = new File(_cwd + "/azkaban-temp");
+		if (!tmpDir.exists()) {
+			tmpDir.mkdir();
+		}
 		// Create properties file with additionally all input generated properties.
 		File[] files = new File[2];
-		files[0] = createFlattenedPropsFile(_cwd);
+		files[0] = createFlattenedPropsFile(tmpDir.toString());
 
 		jobProps.put(ENV_PREFIX + JOB_PROP_ENV, files[0].getAbsolutePath());
 		jobProps.put(ENV_PREFIX + JOB_NAME_ENV, getId());
 
-		files[1] = createOutputPropsFile(getId(), _cwd);
+		files[1] = createOutputPropsFile(getId(), tmpDir.toString());
 		jobProps.put(ENV_PREFIX + JOB_OUTPUT_PROP_FILE, files[1].getAbsolutePath());
 
 		return files;
